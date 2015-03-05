@@ -30,7 +30,6 @@ int ledPin = 13;
 // LED connected to digital pin 13
 int testPin = 7;
 
-
 boolean div32;
 boolean div16;
 // interrupt variables accessed globally
@@ -80,7 +79,7 @@ void setup(){
     return;
   }
   Serial.println("initialization done.");
-  soundfile = SD.open("b.txt");
+  soundfile = SD.open("file.txt", FILE_WRITE);
   
   if (soundfile) {
     Serial.println("Fetched audio data");
@@ -137,30 +136,34 @@ void setup(){
 }
 
 
-int previous = 1;
+int previous = 0;
 
 void loop(){
 
   while (!f_sample) {        
     // wait for Sample Value from ADC
-  }                          
-  // Cycle 15625Hz = 64uSec 
-  Serial.println(digitalRead(4));
-  if (previous && !digitalRead(4)) {
-    soundfile.close();
-    writefile = SD.open("g.txt",FILE_WRITE);
-    previous = 0;
+  } 
+
+  //Serial.println(digitalRead(4));
+  if (!previous && digitalRead(4)) {
+    if (soundfile.size() > 0) {
+      soundfile.close();
+      SD.remove("file.txt");
+      soundfile = SD.open("file.txt", FILE_WRITE);
+    }
+    previous = 1;
     Serial.println("writing ...");
   }
-  else if (!previous && !digitalRead(4)) {
-    writefile.print(badc1);
-    writefile.print(",");
+  else if (previous && digitalRead(4)) {
+    char c = badc1;
+    soundfile.print(c);
   }
-  else if (!previous && digitalRead(4)) {
-    writefile.close();
-    soundfile = SD.open("c.txt");
-    previous = 1;
-  }
+  else if (previous && !digitalRead(4)) {
+    soundfile.seek(0);
+    soundfile.flush();
+    Serial.println("playing back ...");
+    previous = 0;
+  }  
 
   digitalWrite(testPin, HIGH);
 
@@ -168,11 +171,10 @@ void loop(){
   // reset Flag
   
   if (soundfile.available()) {
-    soundfile.seek(soundfile.position()+4);
-     badc1 = 127 + soundfile.read()/2;
-    
+     //soundfile.seek(soundfile.position()+4);
+     badc1 = soundfile.read();
   }
-
+  
   OCR1AL=badc1;               
   // Sample Value to PWM Output                                 
   // Modified by Artin
