@@ -79,7 +79,7 @@ void setup(){
     return;
   }
   Serial.println("initialization done.");
-  soundfile = SD.open("file.txt", FILE_WRITE);
+  soundfile = SD.open("newfile.txt", FILE_WRITE);
   
   if (soundfile) {
     Serial.println("Fetched audio data");
@@ -87,10 +87,6 @@ void setup(){
     // if the file didn't open, print an error:
     Serial.println("error fetching audio data");
   }
-  
-  //fill_sinewave();        
-  // load memory with sine table
-
 
     // set adc prescaler  to 64 for 19kHz sampling frequency
   cbi(ADCSRA, ADPS2);
@@ -148,8 +144,8 @@ void loop(){
   if (!previous && digitalRead(4)) {
     if (soundfile.size() > 0) {
       soundfile.close();
-      SD.remove("file.txt");
-      soundfile = SD.open("file.txt", FILE_WRITE);
+      SD.remove("newfile.txt");
+      soundfile = SD.open("newfile.txt", FILE_WRITE);
     }
     previous = 1;
     Serial.println("writing ...");
@@ -170,12 +166,11 @@ void loop(){
   f_sample=false;            
   // reset Flag
   
-  if (soundfile.available()) {
-     //soundfile.seek(soundfile.position()+4);
+  if (soundfile.available() && !digitalRead(4)) {
+     //soundfile.seek(soundfile.position()+1);
      badc1 = soundfile.read();
-  }
-  
-  OCR1AL=badc1;               
+     OCR1AL=badc1;
+  }               
   // Sample Value to PWM Output                                 
   // Modified by Artin
 
