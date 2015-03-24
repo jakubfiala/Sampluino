@@ -132,7 +132,18 @@ void setup(){
 }
 
 
+int playPos = 0;
+int playLength = 1;
+float realPos = 0;
+int iLow, iHigh;
+float remainder, lowval, highval;
 int previous = 0;
+float multiplier = 1;
+float iterator = 0;
+
+int note = 7;
+float spd = 1.65 + note*0.13;
+
 
 void loop(){
 
@@ -148,6 +159,7 @@ void loop(){
       soundfile = SD.open("newfile.txt", FILE_WRITE);
     }
     previous = 1;
+    iterator = 0;
     Serial.println("writing ...");
   }
   else if (previous && digitalRead(4)) {
@@ -167,13 +179,37 @@ void loop(){
   // reset Flag
   
   if (soundfile.available() && !digitalRead(4)) {
-     //soundfile.seek(soundfile.position()+1);
+     /*playLength = soundfile.size() * multiplier;
+     realPos = playPos / multiplier;
+     iLow = (int)realPos;
+     iHigh = iLow +  1;
+     remainder = realPos - (float)iLow;
+     lowval = 0;
+     highval = 0;
+     if ((iLow >= 0) && (iLow < soundfile.size()))
+      {
+         soundfile.seek(iLow);
+         lowval = soundfile.read();
+      }
+      if ((iHigh >= 0) && (iHigh < soundfile.size()))
+      {
+          highval = soundfile.read();
+      }
+  
+     badc1 = (highval * remainder) + (lowval * (1 - remainder));
+     playPos += 1;*/
+     
+     soundfile.seek((int)round(iterator));
+     iterator += spd;
      badc1 = soundfile.read();
+     
+     
+     
      OCR1AL=badc1;
   }               
   // Sample Value to PWM Output                                 
   // Modified by Artin
-
+  Serial.println(analogRead(A3));
   digitalWrite(testPin, LOW);
 
 }
