@@ -77,7 +77,8 @@ void setup(){
   pinMode(8, OUTPUT);                                                                       
   // Added by Artin
   pinMode(9, OUTPUT);
-  pinMode(4, INPUT);  
+  pinMode(4, INPUT);
+  pinMode(A5, OUTPUT);
   // Added by Artin
   Serial.begin(57600);        
   // connect to the serial port
@@ -177,16 +178,15 @@ void loop(){
   else if (previous && digitalRead(4)) {
     char c = badc1;
     soundfile.print(c);
+    digitalWrite(A5, HIGH);
   }
   else if (previous && !digitalRead(4)) {
     soundfile.seek(0);
     soundfile.flush();
     Serial.println("playing back ...");
+    digitalWrite(A5, LOW);
     previous = 0;
   }  
-
-
-//  digitalWrite(testPin, HIGH);
 
   f_sample=false;            
   // reset Flag
@@ -204,12 +204,11 @@ void loop(){
   }
   
   spd = 1.65 + note*0.13;
-  
   if (soundfile.available() && !digitalRead(4)) {
      soundfile.seek((int)round(iterator));
      iterator += spd;
-     badc1 = soundfile.read();      
-     OCR1AL=badc1;
+     badc1 = soundfile.read();
+     OCR1AL=(byte)badc1*(badc0/255.0);
   }
 
 }
@@ -230,7 +229,7 @@ ISR(TIMER1_OVF_vect) {                                                          
     div16=!div16;  // 
     if (div16) {                       
       // sample channel 0 and 1 alternately so each channel is sampled with 15.6kHz
-      badc0=ADCH;                    
+      badc0=ADCH;                
       // get ADC channel 0
       sbi(ADMUX,MUX0);               
       // set multiplexer to channel 1
